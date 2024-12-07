@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xsl" href="atom.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://zerogamestudio.github.io/ZSharpDoc/blog</id>
-    <title>Z# (ZSharp) Blog</title>
+    <title>Z# Blog</title>
     <updated>2021-08-26T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://zerogamestudio.github.io/ZSharpDoc/blog"/>
-    <subtitle>Z# (ZSharp) Blog</subtitle>
-    <icon>https://zerogamestudio.github.io/ZSharpDoc/img/favicon.ico</icon>
+    <subtitle>Z# Blog</subtitle>
+    <icon>https://zerogamestudio.github.io/ZSharpDoc/img/icon.ico</icon>
     <entry>
         <title type="html"><![CDATA[Welcome]]></title>
         <id>https://zerogamestudio.github.io/ZSharpDoc/blog/welcome</id>
