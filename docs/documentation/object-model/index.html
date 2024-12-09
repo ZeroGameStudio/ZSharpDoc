@@ -5,7 +5,7 @@
 <meta name="generator" content="Docusaurus v3.5.2">
 <title data-rh="true">对象模型 | Z#</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://zerogamestudio.github.io/ZSharpDoc/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://zerogamestudio.github.io/ZSharpDoc/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/object-model"><meta data-rh="true" property="og:locale" content="zh"><meta data-rh="true" name="docusaurus_locale" content="zh"><meta data-rh="true" name="docsearch:language" content="zh"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="对象模型 | Z#"><meta data-rh="true" name="description" content="虚幻引擎的应用层采用 C++/脚本混合开发的模式，而 Z# 是一个非完全基于 UObject 系统的脚本引擎，因此无法像蓝图一样将底层细节完全抽象掉。"><meta data-rh="true" property="og:description" content="虚幻引擎的应用层采用 C++/脚本混合开发的模式，而 Z# 是一个非完全基于 UObject 系统的脚本引擎，因此无法像蓝图一样将底层细节完全抽象掉。"><link data-rh="true" rel="icon" href="/ZSharpDoc/img/icon.ico"><link data-rh="true" rel="canonical" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/object-model"><link data-rh="true" rel="alternate" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/object-model" hreflang="zh"><link data-rh="true" rel="alternate" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/object-model" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/ZSharpDoc/blog/rss.xml" title="Z# RSS Feed">
 <link rel="alternate" type="application/atom+xml" href="/ZSharpDoc/blog/atom.xml" title="Z# Atom Feed"><link rel="stylesheet" href="/ZSharpDoc/assets/css/styles.be0e9aac.css">
-<script src="/ZSharpDoc/assets/js/runtime~main.bce6f30f.js" defer="defer"></script>
+<script src="/ZSharpDoc/assets/js/runtime~main.ce0a2c73.js" defer="defer"></script>
 <script src="/ZSharpDoc/assets/js/main.3cfe74df.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -26,11 +26,15 @@
 <p>虽然定义上没有限制原对象是属于托管侧还是非托管侧，但实践上所有需要共轭映射的类型都是非托管侧的。
 这是因为两侧存在明确的层级关系，即非托管侧是托管侧的底层，因此非托管侧没有理由依赖托管侧的具体类型。</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="共轭生命周期">共轭生命周期<a href="#共轭生命周期" class="hash-link" aria-label="共轭生命周期的直接链接" title="共轭生命周期的直接链接">​</a></h2>
-<p>这是虚幻引擎特有的问题。由于 UObject 和 .NET 都有垃圾回收机制，但两者却完全无法同步。
-不是原对象先于共轭对象销毁，就是共轭对象先于原对象销毁。</p>
-<p>Z# 的做法是让共轭对象永远不早于原对象销毁（热重载会破坏这个假设，但不在这里讨论）。
+<p>由于 UObject 和 .NET 都有垃圾回收机制，但两者却完全无法同步。不是原对象先于共轭对象销毁，就是共轭对象先于原对象销毁。</p>
+<p>这也是 Z# 与蓝图最重要的区别。
+蓝图中的任何对象和引用都依托于 UProperty（这种说法不准确，但可以大致这么认为），即使是局部变量。这意味着蓝图中的所有对象和引用都能正确被 GC 管理；
+而 Z# 与 C++ 一样，存在孤立对象和引用，即 GC 看不到的对象和引用，比如栈上的、未注册到 GC 的堆上的、寄存器中的对象和引用。
+孤立对象和引用的存在使得内存管理变得更加复杂。</p>
+<p>在 C++ 中，误用孤立对象往往会导致未定义行为。但 Z# 作为一个脚本引擎，希望最大限度实现内存安全。</p>
+<p>对此，Z# 的策略是让共轭对象永远不早于原对象销毁（热重载会破坏这个假设，但不在这里讨论）。
 这样做的原因是，我们可以监听任何托管对象的销毁，但无法监听所有非托管对象的销毁。
-对于无法精确控制的非托管对象，Z# 采用保守策略——只要满足被销毁的某个必要非充分条件，就提前将共轭对象标记为无效，进而杜绝一切空悬引用的出现。
+对于无法精  确控制的非托管对象，Z# 采用保守策略——只要满足被销毁的某个必要非充分条件，就提前将共轭对象标记为无效，进而杜绝一切空悬引用的出现。
 这种策略会在一定程度上降低 Z# 的易用性，但安全性对于一个脚本引擎而言是绝对的，我们认为这个牺牲是值得的。</p>
 <p>运行时，托管侧可以通过 <code>IExplicitLifecycle.IsExpired</code> 属性判断一个共轭对象是否失效。</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="共轭对象的颜色">共轭对象的颜色<a href="#共轭对象的颜色" class="hash-link" aria-label="共轭对象的颜色的直接链接" title="共轭对象的颜色的直接链接">​</a></h3>
@@ -45,7 +49,7 @@
 你可以直接缓存任何 UObject 引用，因为 UObject 共轭的有效期是精确绑定到原对象生命周期的；
 除 UObject 外，所有共轭类型都实现了 <code>ICloneable&lt;T&gt;</code> 接口，你可以通过 <code>Clone()</code> 方法创建一个拷贝。
 所有的共轭对象的拷贝都是黑色的，这意味着你可以缓存红色共轭的拷贝。</p>
-<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>信息</div><div class="admonitionContent_BuS1"><p>速记：红色共轭 的有效期跟随方法，类似于值类型；黑色共轭的有效期取决于垃圾回收，类似于引用类型。
+<div class="theme-admonition theme-admonition-info admonition_xJq3 alert alert--info"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 14 16"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"></path></svg></span>信息</div><div class="admonitionContent_BuS1"><p>速记：红色共轭的有效期跟随方法，类似于值类型；黑色共轭的有效期取决于垃圾回收，类似于引用类型。
 一个共轭对象是黑色，意味着你可以安全地缓存它的引用。</p></div></div>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="最佳实践">最佳实践<a href="#最佳实践" class="hash-link" aria-label="最佳实践的直接链接" title="最佳实践的直接链接">​</a></h2>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="缓存共轭对象的引用">缓存共轭对象的引用<a href="#缓存共轭对象的引用" class="hash-link" aria-label="缓存共轭对象的引用的直接链接" title="缓存共轭对象的引用的直接链接">​</a></h3>
@@ -56,7 +60,7 @@
 <p>逻辑上，UObject 共轭的行为和 TWeakObjectPtr 完全相同：它可以查询对象的有效性，但不会影响垃圾回收。
 和 TWeakObjectPtr 类似，在使用之前，你需要确保 IExplicitLifecycle.IsExpired 属性为 false。
 需要注意的是，每当你从 await 语句中返回，你都应该重新判断，因为 await 语句可能是异步的。</p>
-<p>UObject 共轭对象不会影响原对象的回收，如果你想在托管侧添加对 UObject 的 引用，可以使用以下写法：</p>
+<p>UObject 共轭对象不会影响原对象的回收，如果你想在托管侧添加对 UObject 的引用，可以使用以下写法：</p>
 <div class="language-cs codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-cs codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token class-name">UnrealObject</span><span class="token plain"> obj </span><span class="token operator">=</span><span class="token plain"> </span><span class="token range operator">..</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token punctuation" style="color:rgb(248, 248, 242)">;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token class-name">StrongObjectPtr</span><span class="token class-name punctuation" style="color:rgb(248, 248, 242)">&lt;</span><span class="token class-name">UnrealObject</span><span class="token class-name punctuation" style="color:rgb(248, 248, 242)">&gt;</span><span class="token plain"> strongObj </span><span class="token operator">=</span><span class="token plain"> </span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">new</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token plain">obj</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token punctuation" style="color:rgb(248, 248, 242)">;</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="复制代码到剪贴板" title="复制" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 <p>StrongObjectPtr 是 TStrongObjectPtr 的共轭类型，上述代码构造了一个黑色的 StrongObjectPtr 共轭，并指向 obj。
 因此，在 strongObj 销毁或指向其他对象之前，obj 都不会被回收。</p>
