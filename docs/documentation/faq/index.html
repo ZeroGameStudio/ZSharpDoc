@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.5.2">
 <title data-rh="true">FAQ | Z#</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://zerogamestudio.github.io/ZSharpDoc/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://zerogamestudio.github.io/ZSharpDoc/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/faq"><meta data-rh="true" property="og:locale" content="zh"><meta data-rh="true" name="docusaurus_locale" content="zh"><meta data-rh="true" name="docsearch:language" content="zh"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="FAQ | Z#"><meta data-rh="true" name="description" content="修改了动态类的结构，但未生效"><meta data-rh="true" property="og:description" content="修改了动态类的结构，但未生效"><link data-rh="true" rel="icon" href="/ZSharpDoc/img/icon.ico"><link data-rh="true" rel="canonical" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/faq"><link data-rh="true" rel="alternate" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/faq" hreflang="zh"><link data-rh="true" rel="alternate" href="https://zerogamestudio.github.io/ZSharpDoc/docs/documentation/faq" hreflang="x-default"><link rel="stylesheet" href="/ZSharpDoc/assets/css/styles.8ec26809.css">
-<script src="/ZSharpDoc/assets/js/runtime~main.b0513bfe.js" defer="defer"></script>
+<script src="/ZSharpDoc/assets/js/runtime~main.24f125de.js" defer="defer"></script>
 <script src="/ZSharpDoc/assets/js/main.3e0b2954.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -20,12 +20,7 @@
 <li>增删改 Emit 相关的反射标识符</li>
 <li>增删改 UEnum 的字段</li>
 </ul>
-<p>根据作者本人的开发经验，热重载类型信息很容易造成资源损坏，尤其是蓝图。
-这种问题一旦出现，排查起来相当麻烦，得不偿失，因此 Z# 并不主张滥用热重载。
-除了 Emit 相关的修改以外，其他任何修改都通过动态重启 ALC 实现热重载。
-而脚本热重载不涉及持久化，因此安全性非常高。</p>
-<p>作者本人已经在自己的项目中使用了 Z#，从实际体验来看，只要规划好接口，就不需要频繁重启，也就不会对开发体验造成太大影响。
-从目前的规划看，Emit 热重载的优先级很低，可能短期内不会支持。</p>
+<p>在目前的规划中，Emit 热重载的优先级很低，可能短期内不会支持。</p>
 <div class="ant-divider css-1endim9 ant-divider-horizontal" role="separator"></div>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="动态类重写了-blueprintnativeevent-但未生效">动态类重写了 BlueprintNativeEvent 但未生效<a href="#动态类重写了-blueprintnativeevent-但未生效" class="hash-link" aria-label="动态类重写了 BlueprintNativeEvent 但未生效的直接链接" title="动态类重写了 BlueprintNativeEvent 但未生效的直接链接">​</a></h2>
 <p><strong>需要开发者做一些处理</strong></p>
@@ -35,7 +30,7 @@
 因此，即使重写了 BlueprintNativeEvent，仍然不会有动态分发。</p>
 <p>解决方案：</p>
 <ol>
-<li>创建一个蓝图子类，重写这个函数，只连一个 <code>AddCallToParent</code>。</li>
+<li>创建一个蓝图子类，重写这个函数，只连一 个 <code>AddCallToParent</code>。</li>
 <li>创建一个 C++ 基类，将这个 BlueprintNativeEvent 转发到一个 BlueprintImplementableEvent 中。</li>
 <li>去掉引擎代码中的这项优化（注意，改了 UHT 后需要重新编译整个引擎才能确保完全生效）。</li>
 </ol>
@@ -59,7 +54,7 @@
 <div class="ant-divider css-1endim9 ant-divider-horizontal" role="separator"></div>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="是否支持生成蓝图类的胶水代码">是否支持生成蓝图类的胶水代码<a href="#是否支持生成蓝图类的胶水代码" class="hash-link" aria-label="是否支持生成蓝图类的胶水代码的直接链接" title="是否支持生成蓝图类的胶水代码的直接链接">​</a></h2>
 <p><strong>不支持</strong></p>
-<p>Z# 延续了虚幻引擎原本的设计理念，C++、脚本、蓝图三者之间存在明 确的层级关系，即 C++ 在最底层，脚本在中间层，蓝图在最上层。
+<p>Z# 延续了虚幻引擎原本的设计理念，C++、脚本、蓝图三者之间存在明确的层级关系，即 C++ 在最底层，脚本在中间层，蓝图在最上层。
 在这种理念下，脚本是不应该依赖蓝图的，自然也就无需生成蓝图的胶水代码。
 同时，不生成蓝图类的胶水代码，也就意味着动态共轭类型只能继承 Native 类，而不能继承蓝图类。</p>
 <div class="ant-divider css-1endim9 ant-divider-horizontal" role="separator"></div>
@@ -84,6 +79,6 @@ C# 本身的定位就是用于开发大型应用软件，如果没有特殊原�
 <div class="ant-divider css-1endim9 ant-divider-horizontal" role="separator"></div>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="是否支持命名中包含非常见字符如中文字符">是否支持命名中包含非常见字符（如中文字符）<a href="#是否支持命名中包含非常见字符如中文字符" class="hash-link" aria-label="是否支持命名中包含非常见字符（如中文字符）的直接链接" title="是否支持命名中包含非常见字符（如中文字符）的直接链接">​</a></h2>
 <p><strong>不支持</strong></p>
-<p>我们不对特殊字符做任何处理，因此如果命名中包含非常见字符（如动态访问蓝图中的中文名变量），可能会导致一些问题。</p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="文件选项卡"><a class="pagination-nav__link pagination-nav__link--prev" href="/ZSharpDoc/docs/documentation/best-practice"><div class="pagination-nav__sublabel">上一页</div><div class="pagination-nav__label">最佳实践</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#修改了动态类的结构但未生效" class="table-of-contents__link toc-highlight">修改了动态类的结构  ，但未生效</a></li><li><a href="#动态类重写了-blueprintnativeevent-但未生效" class="table-of-contents__link toc-highlight">动态类重写了 BlueprintNativeEvent 但未生效</a></li><li><a href="#动态类重写了-actoractorcomponentuserwidget-的-tick-但未执行" class="table-of-contents__link toc-highlight">动态类重写了 Actor、ActorComponent、UserWidget 的 Tick 但未执行</a></li><li><a href="#是否支持生成蓝图类的胶水代码" class="table-of-contents__link toc-highlight">是否支持生成蓝图类的胶水代码</a></li><li><a href="#是否支持跨平台" class="table-of-contents__link toc-highlight">是否支持跨平台</a></li><li><a href="#是否支持热更新" class="table-of-contents__link toc-highlight">是否支持热更新</a></li><li><a href="#是否支持其他编程语言" class="table-of-contents__link toc-highlight">是否支持其他编程语言</a></li><li><a href="#是否支持纯蓝图项目" class="table-of-contents__link toc-highlight">是否支持纯蓝图项目</a></li><li><a href="#是否支持命名中包含非常见字符如中文字符" class="table-of-contents__link toc-highlight">是否支持命名中包含非常见字符（如中文字符）</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 Zero Games. Built with Docusaurus.</div></div></div></footer></div>
+<p>我们不对特殊字符做任何处理，因此如果命名中包含非常见字符（如动态访问蓝图中的中文名变量），可能会导致一些问题。</p></div></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="文件选项卡"><a class="pagination-nav__link pagination-nav__link--prev" href="/ZSharpDoc/docs/documentation/best-practice"><div class="pagination-nav__sublabel">上一页</div><div class="pagination-nav__label">最佳实践</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#修改了动态类的结构但未生效" class="table-of-contents__link toc-highlight">修改了动态类的结构，但未生效</a></li><li><a href="#动态类重写了-blueprintnativeevent-但未生效" class="table-of-contents__link toc-highlight">动态类重写了 BlueprintNativeEvent 但未生效</a></li><li><a href="#动态类重写了-actoractorcomponentuserwidget-的-tick-但未执行" class="table-of-contents__link toc-highlight">动态类重写了 Actor、ActorComponent、UserWidget 的 Tick 但未执行</a></li><li><a href="#是否支持生成蓝图类的胶水代码" class="table-of-contents__link toc-highlight">是否支持生成蓝图类的胶水代码</a></li><li><a href="#是否支持跨平台" class="table-of-contents__link toc-highlight">是否支持跨平台</a></li><li><a href="#是否支持热更新" class="table-of-contents__link toc-highlight">是否支持热更新</a></li><li><a href="#是否支持其他编程语言" class="table-of-contents__link toc-highlight">是否支持其他编程语言</a></li><li><a href="#是否支持纯蓝图项目" class="table-of-contents__link toc-highlight">是否支持纯蓝图项目</a></li><li><a href="#是否支持命名中包含非常见字符如中文字符" class="table-of-contents__link toc-highlight">是否支持命名中包含非常见字符（如中文字符）</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 Zero Games. Built with Docusaurus.</div></div></div></footer></div>
 </body>
 </html>
